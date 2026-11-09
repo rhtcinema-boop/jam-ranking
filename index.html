@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jam Ranking</title>
+<meta name="description" content="POKER Jam Ranking のポイント計算">
+<meta name="theme-color" content="#14181b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Jam Ranking">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:dark;
+  /* 全サイズの基準。幅390pxで1px相当になり、画面に合わせて伸縮する */
+  --u:clamp(.6px,calc(100vw / 390),1.6px);
+  --bg:#14181b;
+  --line:#343b40;
+  --text:#f4f5f5;
+  --muted:#e0e4e6;
+  --red:#d5202c;
+  --coral:#ff5c5c;
+  --cream:#f3f0e9;
+  --ink:#1b1f22;
+  --ink-soft:#5b6165;
+  --num:"Oswald","Hiragino Sans","Noto Sans JP",sans-serif;
+  --jp:"Noto Sans JP","Hiragino Sans","Hiragino Kaku Gothic ProN",sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--bg)}
+body{
+  position:relative;overflow-x:hidden;
+  color:var(--text);font-family:var(--jp);font-weight:500;
+  font-feature-settings:"palt";
+  -webkit-text-size-adjust:100%;
+}
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;
+  background:radial-gradient(90% 55% at 100% 8%,rgba(170,20,28,.62),rgba(170,20,28,.14) 55%,transparent 78%)}
+.bg svg{position:absolute;top:-14px;right:-52px;width:calc(var(--u)*170);height:auto;opacity:.26;-webkit-mask:linear-gradient(#000 30%,transparent 62%);mask:linear-gradient(#000 30%,transparent 62%)}
+.app{position:relative;z-index:1;width:100%;max-width:calc(var(--u)*390);margin:0 auto;
+  padding:calc(env(safe-area-inset-top) + calc(var(--u)*14)) calc(var(--u)*18) calc(env(safe-area-inset-bottom) + calc(var(--u)*28))}
+
+/* ヘッダー */
+header{display:flex;align-items:flex-start;justify-content:space-between;gap:calc(var(--u)*12);margin-bottom:calc(var(--u)*14)}
+h1{margin:0;font:700 calc(var(--u)*33)/1.08 var(--num);letter-spacing:.015em;
+  background:linear-gradient(180deg,#fff 15%,#c9cdd0 55%,#8f959a 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{display:flex;align-items:center;gap:calc(var(--u)*8);margin-top:calc(var(--u)*5);font-size:calc(var(--u)*15);font-weight:700}
+.sub::before{content:"";width:calc(var(--u)*20);height:2px;background:var(--red)}
+.help{flex:none;width:calc(var(--u)*46);height:calc(var(--u)*46);border-radius:50%;border:1px solid rgba(255,255,255,.34);
+  background:rgba(20,24,27,.62);color:var(--text);font:600 calc(var(--u)*24) var(--num);cursor:pointer}
+
+/* 店舗タブ */
+.tabs{display:flex;gap:calc(var(--u)*6);margin:0 0 calc(var(--u)*14);padding:2px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;display:flex;align-items:center;gap:calc(var(--u)*6);max-width:calc(var(--u)*190);min-height:calc(var(--u)*48);padding:0 calc(var(--u)*15);border:1px solid #6d757a;border-radius:calc(var(--u)*10);background:rgba(0,0,0,.28);color:var(--text);font:700 calc(var(--u)*17) var(--jp);cursor:pointer;white-space:nowrap}
+.tab span{overflow:hidden;text-overflow:ellipsis}
+.tab[aria-selected="true"]{background:var(--cream);border-color:var(--cream);color:var(--ink);box-shadow:inset 0 -4px 0 var(--red)}
+.tab svg{flex:none;width:calc(var(--u)*16);height:calc(var(--u)*16);fill:none;stroke:#b5121d;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.tab-add{flex:none;width:calc(var(--u)*48);min-height:calc(var(--u)*48);border:1px dashed #8a9196;border-radius:calc(var(--u)*10);background:none;color:var(--text);font:500 calc(var(--u)*28)/1 var(--num);cursor:pointer}
+
+/* セクション */
+.sec-head{min-height:calc(var(--u)*46);display:flex;align-items:center;gap:calc(var(--u)*10)}
+.badge{flex:none;display:grid;place-items:center;width:calc(var(--u)*34);height:calc(var(--u)*34);border-radius:50%;
+  font:700 calc(var(--u)*18) var(--num);background:var(--cream);color:var(--ink);
+  outline:1.5px dashed rgba(255,255,255,.75);outline-offset:-5px}
+.badge.b2{background:var(--red);color:#fff}
+.badge.b1{outline-color:rgba(27,31,34,.45)}
+h2{margin:0;font-size:calc(var(--u)*22);font-weight:900;flex:1}
+
+/* 区切り */
+.sec{margin-top:calc(var(--u)*16);padding-top:calc(var(--u)*14);border-top:1px solid var(--line)}
+
+/* 順位表 */
+/* 通常は順位と合計だけ。詳細で係数と成績ptを開く */
+.rank-head,.rank{display:grid;grid-template-columns:1fr auto;column-gap:calc(var(--u)*6);align-items:center;padding:0 calc(var(--u)*12)}
+.rank-head .dt,.rank .c,.rank .p{display:none}
+.detail .rank-head,.detail .rank{grid-template-columns:calc(var(--u)*62) 1fr 1fr 1.3fr}
+.detail .rank-head .dt,.detail .rank .c,.detail .rank .p{display:block}
+.more{flex:none;min-height:calc(var(--u)*46);padding:0 calc(var(--u)*14);border:1px solid #6d757a;border-radius:calc(var(--u)*10);background:rgba(0,0,0,.28);color:var(--text);font:700 calc(var(--u)*16) var(--jp);cursor:pointer}
+.more::after{content:"";display:inline-block;width:calc(var(--u)*6);height:calc(var(--u)*6);margin:0 1px calc(var(--u)*3) calc(var(--u)*8);border-right:2px solid var(--coral);border-bottom:2px solid var(--coral);transform:rotate(45deg)}
+.more[aria-expanded="true"]::after{margin-bottom:-1px;transform:rotate(-135deg)}
+@keyframes flash{0%{opacity:.45}100%{opacity:1}}
+.flash{animation:flash .2s ease-out}
+@media (prefers-reduced-motion:reduce){.flash{animation:none}}
+.rank-head{margin-top:calc(var(--u)*9);padding-bottom:calc(var(--u)*6);font-size:calc(var(--u)*14);font-weight:700;color:var(--muted)}
+.rank-head span:not(:first-child),.rank span:not(:first-child){text-align:right}
+.rank{width:100%;min-height:calc(var(--u)*52);border:0;border-top:1px solid var(--line);background:none;color:var(--text);text-align:left;font-family:var(--jp)}
+.rank:first-child{border-top:0}
+/* 5位ごとに線を強めて追いやすく */
+.rank:nth-child(5n+1):not(:first-child){border-top:2px solid #7c858a}
+/* 入賞と圏外の境目 */
+.rank.is-out,.rank.is-out:nth-child(5n+1):not(:first-child){border-top:2px solid var(--red);margin-top:calc(var(--u)*4)}
+.rank .r{font:700 calc(var(--u)*27) var(--num)}
+.rank .r small{font-size:calc(var(--u)*16)}
+.rank .r.jp{font:900 calc(var(--u)*17) var(--jp);color:var(--muted)}
+.rank .c,.rank .p{font:500 calc(var(--u)*21) var(--num);color:#e6e9eb;font-variant-numeric:tabular-nums}
+.rank .t{font:700 calc(var(--u)*33) var(--num);color:var(--coral);font-variant-numeric:tabular-nums}
+.rank .t small{font-size:calc(var(--u)*18);margin-left:1px}
+
+/* 入力行 */
+.fields{display:grid;gap:calc(var(--u)*10);margin-top:calc(var(--u)*12)}
+.field{display:flex;align-items:center;justify-content:space-between;gap:calc(var(--u)*8)}
+.lbl{font-size:calc(var(--u)*17);font-weight:900;line-height:1.25}
+.lbl{flex:1 1 0;min-width:0}
+.lbl span{display:inline-block}
+.ctrl{flex:none}
+.lbl small{display:block;font-size:calc(var(--u)*11);font-weight:700;color:var(--muted)}
+.ctrl{display:flex;align-items:center;gap:calc(var(--u)*13)}
+.step{display:flex;align-items:center;border:1px solid #5a6267;border-radius:calc(var(--u)*10);background:rgba(0,0,0,.28)}
+.step button{width:calc(var(--u)*46);height:calc(var(--u)*50);border:0;background:none;color:var(--text);font:500 calc(var(--u)*28)/1 var(--num);cursor:pointer;touch-action:manipulation}
+.step button:disabled{color:#596066;cursor:default}
+.step input{width:calc(var(--u)*60);height:calc(var(--u)*50);border:0;border-inline:1px solid #454c51;background:none;color:var(--text);
+  text-align:center;font:600 calc(var(--u)*29) var(--num);border-radius:0;appearance:textfield;-moz-appearance:textfield}
+.step input::-webkit-outer-spin-button,.step input::-webkit-inner-spin-button{appearance:none;margin:0}
+.coef-box{flex:none;text-align:right;width:calc(var(--u)*76)}
+.coef-box small{display:block;font-size:calc(var(--u)*12.5);font-weight:700;color:var(--muted);white-space:nowrap;margin-bottom:1px}
+.coef{min-width:calc(var(--u)*56);line-height:1.05;text-align:right;font:700 calc(var(--u)*29) var(--num);color:var(--coral);white-space:nowrap}
+.coef.out{font:900 calc(var(--u)*15) var(--jp);color:var(--muted)}
+
+/* 赤い数字は白フチで読みやすく */
+.coef,.rank .t{color:#e0101c;-webkit-text-stroke:calc(var(--u)*3.2) #fff;paint-order:stroke fill;letter-spacing:.035em}
+.rank .t small{-webkit-text-stroke-width:calc(var(--u)*2.6)}
+
+:focus-visible{outline:2px solid #fff;outline-offset:2px}
+
+/* ? シート */
+dialog{width:min(calc(100vw - calc(var(--u)*32)),calc(var(--u)*440));padding:0;border:1px solid #4a5257;border-radius:calc(var(--u)*16);background:#1d2226;color:var(--text)}
+dialog::backdrop{background:rgba(0,0,0,.66)}
+.sheet{padding:calc(var(--u)*20)}
+.sheet h3{margin:0 0 calc(var(--u)*14);font-size:calc(var(--u)*21);font-weight:900}
+.sheet dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:calc(var(--u)*10) calc(var(--u)*14);font-size:calc(var(--u)*16)}
+.sheet dt{font-weight:900;white-space:nowrap}
+.sheet dd{margin:0;color:#dfe3e5;line-height:1.5}
+.edit-lbl{display:block;margin-bottom:calc(var(--u)*8);font-size:calc(var(--u)*18);font-weight:900}
+.edit-input{display:block;width:100%;height:calc(var(--u)*52);padding:0 calc(var(--u)*12);border:1px solid #6d757a;border-radius:calc(var(--u)*10);background:rgba(0,0,0,.28);color:var(--text);font:700 max(16px,calc(var(--u)*18)) var(--jp)}
+.edit-actions{display:flex;gap:calc(var(--u)*14);margin-top:calc(var(--u)*16)}
+.edit-actions .close{flex:1;margin-top:0}
+.del{flex:none;min-width:calc(var(--u)*88);height:calc(var(--u)*52);padding:0 calc(var(--u)*12);border:1px solid #6d757a;border-radius:calc(var(--u)*10);background:none;color:var(--text);font:700 calc(var(--u)*16) var(--jp);cursor:pointer}
+.del[data-armed="1"]{flex:1;border-color:var(--coral);color:var(--coral)}
+.del[hidden]{display:none}
+.close{display:block;width:100%;height:calc(var(--u)*52);margin-top:calc(var(--u)*18);border:0;border-radius:calc(var(--u)*10);background:var(--red);color:#fff;font:900 calc(var(--u)*17) var(--jp);cursor:pointer}
+
+/* 低い画面・狭い画面 */
+@media (max-height:740px){
+  .app{padding-top:calc(env(safe-area-inset-top) + calc(var(--u)*10));padding-bottom:calc(env(safe-area-inset-bottom) + calc(var(--u)*24))}
+  header{margin-bottom:calc(var(--u)*9)}
+  .sec{margin-top:calc(var(--u)*10);padding-top:calc(var(--u)*10)}
+}
+
+/* 横に余裕があれば入力と順位表を左右に並べる */
+@media (min-width:700px),(min-width:560px) and (orientation:landscape){
+  :root{--u:clamp(.72px,calc(100vw / 780),1.5px)}
+  .app{max-width:calc(var(--u)*780)}
+  main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:calc(var(--u)*24);align-items:start}
+  main>section:first-child{position:sticky;top:calc(var(--u)*10)}
+  main>.sec{margin-top:0;padding-top:0;border-top:0}
+}
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true">
+  <svg viewBox="0 0 200 330" fill="none">
+    <defs><linearGradient id="tg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#cfd3d6"/><stop offset=".55" stop-color="#6d7377"/><stop offset="1" stop-color="#2a2e31"/></linearGradient></defs>
+    <path fill="url(#tg)" d="M42 14h116c1 58-3 104-36 132-9 8-13 20-13 36v46h-18v-46c0-16-4-28-13-36C45 118 41 72 42 14Z"/>
+    <path fill="url(#tg)" d="M62 244h76l8 26H54zM40 278h120l6 30H34z"/>
+  </svg>
+</div>
+
+<div class="app">
+  <header>
+    <div>
+      <h1>POKER Jam Ranking</h1>
+      <div class="sub">ポイント計算</div>
+    </div>
+    <button class="help" id="helpBtn" type="button" aria-label="計算ルールを見る">?</button>
+  </header>
+
+  <div class="tabs" id="tabs" role="tablist" aria-label="店舗"></div>
+
+  <main>
+    <section aria-labelledby="h-info">
+      <div class="sec-head">
+        <span class="badge b1" aria-hidden="true">1</span>
+        <h2 id="h-info">トナメ情報</h2>
+      </div>
+      <div class="fields">
+      <div class="field">
+        <label class="lbl" for="nInput">参加人数</label>
+        <div class="ctrl">
+          <div class="step">
+            <button type="button" id="nDown" aria-label="参加人数を減らす">−</button>
+            <input id="nInput" type="number" inputmode="numeric" min="2" max="999" value="30">
+            <button type="button" id="nUp" aria-label="参加人数を増やす">+</button>
+          </div>
+          <div class="coef-box"><small>人数係数</small><div class="coef" id="nCoef" aria-live="polite">×1.4</div></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="lbl" for="iInput"><span>インマネ</span><span>人数</span></label>
+        <div class="ctrl">
+          <div class="step">
+            <button type="button" id="iDown" aria-label="インマネ人数を減らす">−</button>
+            <input id="iInput" type="number" inputmode="numeric" min="1" max="999" value="5">
+            <button type="button" id="iUp" aria-label="インマネ人数を増やす">+</button>
+          </div>
+          <div class="coef-box"><small>入賞率</small><div class="coef" id="iRate" aria-live="polite">17%</div></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="lbl" for="cInput"><span>自分の</span><span>エントリー数</span></label>
+        <div class="ctrl">
+          <div class="step">
+            <button type="button" id="cDown" aria-label="エントリー数を減らす">−</button>
+            <input id="cInput" type="number" inputmode="numeric" min="1" max="99" value="3">
+            <button type="button" id="cUp" aria-label="エントリー数を増やす">+</button>
+          </div>
+          <div class="coef-box"><small>エントリーpt</small><div class="coef" id="entryPt" aria-live="polite">10pt</div></div>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="h-result" class="sec">
+      <div class="sec-head">
+        <span class="badge b2" aria-hidden="true">2</span>
+        <h2 id="h-result">順位別ポイント</h2>
+        <button class="more" id="moreBtn" type="button" aria-expanded="false" aria-controls="ranks">詳細</button>
+      </div>
+      <div class="rank-head" id="rankHead" aria-hidden="true"><span>順位</span><span class="dt">順位係数</span><span class="dt">成績pt</span><span>合計</span></div>
+      <div class="ranks" id="ranks" role="table" aria-label="順位別ポイント"></div>
+    </section>
+  </main>
+</div>
+
+<dialog id="tabEdit" aria-labelledby="tabEditTitle">
+  <form class="sheet" id="tabForm">
+    <label class="edit-lbl" id="tabEditTitle" for="tabName">タブの名前</label>
+    <input class="edit-input" id="tabName" type="text" maxlength="12" autocomplete="off" enterkeyhint="done">
+    <div class="edit-actions">
+      <button class="del" type="button" id="tabDelete">削除</button>
+      <button class="close" type="submit">保存</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="help" aria-labelledby="helpTitle">
+  <div class="sheet">
+    <h3 id="helpTitle" tabindex="-1" autofocus style="outline:none">計算ルール</h3>
+    <dl id="ruleList"></dl>
+    <button class="close" type="button" id="helpClose">閉じる</button>
+  </div>
+</dialog>
+
+<script>
+/* ルールはここだけ変更すれば全体に反映される */
+const RULE = {
+  entryPt: 5,            // 1エントリーあたり
+  entryCap: 10,          // エントリーptの上限
+  base: 100,             // 成績ptの基礎点
+  paidPercent: 15,       // 入賞は上位何%か（端数は切り上げ）
+  nMinPeople: 10,        // 人数係数 ×1.0 になる人数
+  nMaxPeople: 60,        // 人数係数 ×2.0 になる人数
+  nMinCoef: 1.0, nMaxCoef: 2.0,
+  rMinCoef: 0.2, rMaxCoef: 1.0
+};
+
+/* 計算（画面に依存しない） */
+const paidCount = n => Math.max(1, Math.ceil(n * RULE.paidPercent / 100));
+function nCoef(n){
+  const t = (Math.min(RULE.nMaxPeople, Math.max(RULE.nMinPeople, n)) - RULE.nMinPeople) / (RULE.nMaxPeople - RULE.nMinPeople);
+  return Math.round((RULE.nMinCoef + (RULE.nMaxCoef - RULE.nMinCoef) * t) * 100) / 100;
+}
+function rCoef(rank, paid){
+  if (rank > paid) return 0;
+  if (paid === 1) return RULE.rMaxCoef;
+  return Math.round((RULE.rMinCoef + (RULE.rMaxCoef - RULE.rMinCoef) * (paid - rank) / (paid - 1)) * 100) / 100;
+}
+function calc(count, n, rank, paid = paidCount(n)){
+  const entry = Math.min(RULE.entryCap, count * RULE.entryPt);
+  const a = nCoef(n), b = rCoef(rank, paid);
+  const result = Math.round(Math.round(RULE.base * a * b * 1e6) / 1e6);
+  return { entry, a, b, result, total: entry + result, paid };
+}
+const fmt = c => { const s = (Math.round(c * 100) / 100).toFixed(2); return s.endsWith("0") ? s.slice(0, -1) : s; };
+
+/* 状態 */
+/* タブごとに人数などを持つ。保存はこの端末のみ */
+const KEY = "jam-ranking-tabs-v1";
+let tabs = [{ name: "店舗1", n: 30, paid: 5, count: 3 }];
+let active = 0;
+try {
+  const d = JSON.parse(localStorage.getItem(KEY));
+  const valid = t => t && typeof t.name === "string" && t.n >= 2 && t.n <= 999 && t.paid >= 1 && t.paid <= t.n && t.count >= 1 && t.count <= 99;
+  if (d && Array.isArray(d.tabs) && d.tabs.length && d.tabs.every(valid)) {
+    tabs = d.tabs;
+    active = Math.min(Math.max(0, d.active | 0), tabs.length - 1);
+  }
+} catch (e) {}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify({ tabs, active })); } catch (e) {} }
+let S = tabs[active];
+const $ = id => document.getElementById(id);
+
+let lastTotals = null, lastEntry = null;
+function row(label, isJp, coef, pt, total, flash){
+  return '<div class="rank' + (isJp ? " is-out" : "") + '" role="row"><span class="r' + (isJp ? " jp" : "") + '" role="cell">' + label + '</span>'
+    + '<span class="c" role="cell">' + coef + '</span><span class="p" role="cell">' + pt + '</span>'
+    + '<span class="t' + (flash ? " flash" : "") + '" role="cell">' + total + '<small>pt</small></span></div>';
+}
+
+const PEN = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1-5L16 4l4 4L9 19z"/></svg>';
+function renderTabs(){
+  const box = $("tabs"), keep = box.scrollLeft;
+  box.textContent = "";
+  tabs.forEach((t, i) => {
+    const b = document.createElement("button");
+    const on = i === active;
+    b.className = "tab"; b.type = "button";
+    b.setAttribute("role", "tab");
+    b.setAttribute("aria-selected", String(on));
+    b.setAttribute("aria-label", on ? t.name + " 名前を編集" : t.name);
+    const name = document.createElement("span");
+    name.textContent = t.name;
+    b.append(name);
+    if (on) b.insertAdjacentHTML("beforeend", PEN);
+    b.addEventListener("click", () => on ? openEdit() : selectTab(i));
+    box.append(b);
+  });
+  const add = document.createElement("button");
+  add.className = "tab-add"; add.type = "button"; add.textContent = "+";
+  add.setAttribute("aria-label", "タブを追加");
+  add.addEventListener("click", () => newTab());
+  box.append(add);
+  box.scrollLeft = keep;
+  const cur = box.children[active];
+  if (cur.offsetLeft < box.scrollLeft) box.scrollLeft = cur.offsetLeft;
+  else if (cur.offsetLeft + cur.offsetWidth > box.scrollLeft + box.clientWidth) box.scrollLeft = cur.offsetLeft + cur.offsetWidth - box.clientWidth;
+}
+function selectTab(i){ active = i; S = tabs[i]; lastTotals = null; lastEntry = null; render(); }
+function newTab(name){
+  tabs.push({ name: name || "店舗" + (tabs.length + 1), n: 30, paid: paidCount(30), count: 1 });
+  selectTab(tabs.length - 1);
+}
+function removeTab(){
+  if (tabs.length < 2) return;
+  tabs.splice(active, 1);
+  selectTab(Math.min(active, tabs.length - 1));
+}
+function renameTab(v){ const n = v.trim().slice(0, 12); if (n) { S.name = n; render(); } }
+function openEdit(){
+  $("tabName").value = S.name;
+  const del = $("tabDelete");
+  del.hidden = tabs.length < 2;
+  del.dataset.armed = "0"; del.textContent = "削除";
+  $("tabEdit").showModal();
+  $("tabName").focus(); $("tabName").select();
+}
+
+function render(){
+  renderTabs();
+  const rows = [], totals = [];
+  const changed = (i, v) => lastTotals !== null && lastTotals[i] !== v;
+  for (let k = 1; k <= S.paid; k++){
+    const r = calc(S.count, S.n, k, S.paid);
+    totals.push(r.total);
+    rows.push(row(k + '<small>位</small>', false, "×" + fmt(r.b), r.result, r.total, changed(k - 1, r.total)));
+  }
+  const e = calc(S.count, S.n, S.paid + 1, S.paid);
+  totals.push(e.total);
+  rows.push(row("圏外", true, "−", 0, e.total, changed(S.paid, e.total)));
+  $("ranks").innerHTML = rows.join("");
+  lastTotals = totals;
+  if (lastEntry !== null && lastEntry !== e.entry){
+    const el = $("entryPt"); el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
+  }
+  lastEntry = e.entry;
+
+  $("entryPt").textContent = e.entry + "pt";
+  if (document.activeElement !== $("nInput")) $("nInput").value = S.n;
+  if (document.activeElement !== $("iInput")) $("iInput").value = S.paid;
+  if (document.activeElement !== $("cInput")) $("cInput").value = S.count;
+  $("nCoef").textContent = "×" + fmt(e.a);
+  $("iRate").textContent = Math.round(S.paid / S.n * 100) + "%";
+  $("nDown").disabled = S.n <= 2;
+  $("nUp").disabled = S.n >= 999;
+  $("iDown").disabled = S.paid <= 1;
+  $("iUp").disabled = S.paid >= S.n;
+  $("cDown").disabled = S.count <= 1;
+  $("cUp").disabled = S.count >= 99;
+  $("iInput").max = S.n;
+  save();
+}
+
+/* 操作 */
+/* 参加人数を変えるとインマネ人数は上位15%に戻る。その後で手直しできる */
+function setN(v){ S.n = Math.min(999, Math.max(2, v)); S.paid = paidCount(S.n); render(); }
+function setPaid(v){ S.paid = Math.min(S.n, Math.max(1, v)); render(); }
+function setCount(v){ S.count = Math.min(99, Math.max(1, v)); render(); }
+
+function hold(btn, fn){
+  let timer, iv;
+  const stop = () => { clearTimeout(timer); clearInterval(iv); };
+  btn.addEventListener("pointerdown", () => { timer = setTimeout(() => { iv = setInterval(fn, 70); }, 380); });
+  ["pointerup", "pointerleave", "pointercancel"].forEach(ev => btn.addEventListener(ev, stop));
+  btn.addEventListener("click", fn);
+}
+hold($("nDown"), () => setN(S.n - 1));
+hold($("nUp"), () => setN(S.n + 1));
+hold($("iDown"), () => setPaid(S.paid - 1));
+hold($("iUp"), () => setPaid(S.paid + 1));
+hold($("cDown"), () => setCount(S.count - 1));
+hold($("cUp"), () => setCount(S.count + 1));
+
+function bindNumber(input, apply, current){
+  input.addEventListener("input", () => { const v = parseInt(input.value, 10); if (!isNaN(v) && v >= 1) apply(v); });
+  input.addEventListener("focus", () => input.select());
+  input.addEventListener("blur", () => { input.value = current(); render(); });
+}
+bindNumber($("nInput"), setN, () => S.n);
+bindNumber($("iInput"), setPaid, () => S.paid);
+bindNumber($("cInput"), setCount, () => S.count);
+
+$("ruleList").innerHTML = [
+  ["エントリーpt", RULE.entryPt + "pt × 回数（上限 " + RULE.entryCap + "pt）"],
+  ["成績pt", RULE.base + "pt × 人数 × 順位"],
+  ["インマネ", "初期値は上位" + RULE.paidPercent + "%（切り上げ）"],
+  ["人数", RULE.nMinPeople + "人以下 ×" + fmt(RULE.nMinCoef) + " 〜 " + RULE.nMaxPeople + "人以上 ×" + fmt(RULE.nMaxCoef)],
+  ["順位", "入賞最下位 ×" + fmt(RULE.rMinCoef) + " 〜 優勝 ×" + fmt(RULE.rMaxCoef)],
+  ["端数", "成績ptを四捨五入"]
+].map(([a, b]) => "<dt>" + a + "</dt><dd>" + b + "</dd>").join("");
+$("tabForm").addEventListener("submit", e => { e.preventDefault(); renameTab($("tabName").value); $("tabEdit").close(); });
+$("tabDelete").addEventListener("click", () => {
+  const del = $("tabDelete");
+  if (del.dataset.armed === "1") { removeTab(); $("tabEdit").close(); return; }
+  del.dataset.armed = "1"; del.textContent = "もう一度押すと削除";
+});
+$("tabEdit").addEventListener("click", e => { if (e.target === $("tabEdit")) $("tabEdit").close(); });
+$("moreBtn").addEventListener("click", () => {
+  const open = $("moreBtn").getAttribute("aria-expanded") !== "true";
+  $("moreBtn").setAttribute("aria-expanded", String(open));
+  $("moreBtn").closest("section").classList.toggle("detail", open);
+});
+$("helpBtn").addEventListener("click", () => $("help").showModal());
+$("helpClose").addEventListener("click", () => $("help").close());
+$("help").addEventListener("click", e => { if (e.target === $("help")) $("help").close(); });
+
+window.__jam = { calc, get S(){ return S; }, get tabs(){ return tabs; }, setN, setPaid, setCount, render, newTab, selectTab, renameTab, openEdit };
+render();
+
+if ("serviceWorker" in navigator && location.protocol === "https:") {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
+</script>
+</body>
+</html>
