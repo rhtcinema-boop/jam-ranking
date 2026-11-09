@@ -85,7 +85,7 @@ h2{margin:0;font-size:calc(var(--u)*17);font-weight:700;letter-spacing:.03em;fle
 
 /* 順位表 */
 /* 通常は順位と合計だけ。詳細で係数と成績ptを開く */
-.rank-head,.rank{display:grid;grid-template-columns:1fr auto;column-gap:calc(var(--u)*6);align-items:center;padding:0 calc(var(--u)*12)}
+.rank-head,.rank{display:grid;grid-template-columns:calc(var(--u)*64) calc(var(--u)*116);justify-content:center;column-gap:calc(var(--u)*8);align-items:center;padding:0 calc(var(--u)*12)}
 .rank-head .dt,.rank .c,.rank .p{display:none}
 .detail .rank-head,.detail .rank{grid-template-columns:calc(var(--u)*52) .9fr .9fr 1.2fr;column-gap:calc(var(--u)*14)}
 .detail .rank-head .dt,.detail .rank .c,.detail .rank .p{display:block}
@@ -114,6 +114,8 @@ h2{margin:0;font-size:calc(var(--u)*17);font-weight:700;letter-spacing:.03em;fle
 .ranks{flex:1;min-height:0;overflow-y:auto;display:grid;grid-auto-flow:column;align-content:start;column-gap:calc(var(--u)*24);
   grid-template-columns:repeat(var(--cols,1),minmax(0,1fr));grid-template-rows:repeat(var(--rows,1),var(--rowh,calc(var(--u)*52)))}
 .two .rank-head{display:none}
+.two .rank{grid-template-columns:auto 1fr;justify-content:stretch}
+.detail .rank-head,.detail .rank{justify-content:stretch}
 .two .ranks{background:linear-gradient(#6d757a,#6d757a) center top/1px 100% no-repeat}
 .ranks .rank{height:100%;padding-inline:calc(var(--u)*8);column-gap:calc(var(--u)*10)}
 .rank-head{padding-inline:calc(var(--u)*8)}
@@ -349,13 +351,16 @@ function nCoef(n){
 function rCoef(rank, paid){
   if (rank > paid) return 0;
   if (paid === 1) return RULE.rMaxCoef;
-  return Math.round((RULE.rMinCoef + (RULE.rMaxCoef - RULE.rMinCoef) * (paid - rank) / (paid - 1)) * 100) / 100;
+  return RULE.rMaxCoef - (RULE.rMaxCoef - RULE.rMinCoef) * (rank - 1) / (paid - 1);
 }
+/* 小数第2位を四捨五入（計算誤差を先に丸める） */
+const round1 = v => Math.round(Math.round(v * 1e6) / 1e5) / 10;
+const pt = v => v.toFixed(1);
 function calc(count, n, rank, paid = paidCount(n)){
   const entry = Math.min(RULE.entryCap, count * RULE.entryPt);
   const a = nCoef(n), b = rCoef(rank, paid);
-  const result = Math.round(Math.round(RULE.base * a * b * 1e6) / 1e6);
-  return { entry, a, b, result, total: entry + result, paid };
+  const result = round1(RULE.base * a * b);
+  return { entry, a, b, result, total: round1(entry + result), paid };
 }
 const fmt = c => { const s = (Math.round(c * 100) / 100).toFixed(2); return s.endsWith("0") ? s.slice(0, -1) : s; };
 
@@ -442,7 +447,7 @@ function fitRanks(){
   let H = box.clientHeight;
   let cols = 1, rows = items.length;
   if (!detail && rows * minH > H) { cols = 2; rows = Math.ceil(items.length / 2); sec.classList.add("two"); H = box.clientHeight; }
-  const floor = detail ? minH : 18;
+  const floor = detail ? 22 : 18;
   let rowH = Math.max(floor, Math.min(maxH, Math.floor(H / rows)));
   box.style.setProperty("--cols", cols);
   box.style.setProperty("--rows", rows);
@@ -462,11 +467,11 @@ function render(){
   for (let k = 1; k <= S.paid; k++){
     const r = calc(S.count, S.n, k, S.paid);
     totals.push(r.total);
-    rows.push(row(k + '<small>位</small>', false, "×" + fmt(r.b), r.result, r.total, changed(k - 1, r.total)));
+    rows.push(row(k + '<small>位</small>', false, "×" + fmt(r.b), pt(r.result), pt(r.total), changed(k - 1, r.total)));
   }
   const e = calc(S.count, S.n, S.paid + 1, S.paid);
   totals.push(e.total);
-  rows.push(row("圏外", true, "−", 0, e.total, changed(S.paid, e.total)));
+  rows.push(row("圏外", true, "−", pt(0), pt(e.total), changed(S.paid, e.total)));
   $("ranks").innerHTML = rows.join("");
   lastTotals = totals;
   if (lastEntry !== null && lastEntry !== e.entry){
@@ -529,9 +534,9 @@ $("ruleList").innerHTML = [
     const range = i === 0 ? "〜" + (next[0] - 1) : next ? min + "〜" + (next[0] - 1) : min + "〜";
     return "<span>" + range + "人 ×" + fmt(coef) + "</span>";
   }).join("") + "</span>"],
-  ["順位", "入賞最下位 ×" + fmt(RULE.rMinCoef) + " 〜 優勝 ×" + fmt(RULE.rMaxCoef)],
+  ["順位", "1位 ×" + fmt(RULE.rMaxCoef) + " 〜 入賞最下位 ×" + fmt(RULE.rMinCoef) + "（均等）"],
   ["合計", "エントリーpt ＋ 成績pt"],
-  ["端数", "成績ptを四捨五入"]
+  ["端数", "小数第2位を四捨五入"]
 ].map(([a, b]) => "<dt>" + a + "</dt><dd>" + b + "</dd>").join("");
 $("tabForm").addEventListener("submit", e => { e.preventDefault(); renameTab($("tabName").value); $("tabEdit").close(); });
 $("tabDelete").addEventListener("click", () => {
