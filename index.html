@@ -136,7 +136,10 @@ dialog{width:min(calc(100vw - calc(var(--u)*32)),calc(var(--u)*440));padding:0;b
 dialog::backdrop{background:rgba(0,0,0,.66)}
 .sheet{padding:calc(var(--u)*20)}
 .sheet h3{margin:0 0 calc(var(--u)*14);font-size:calc(var(--u)*21);font-weight:900}
-.sheet dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:calc(var(--u)*10) calc(var(--u)*14);font-size:calc(var(--u)*16)}
+.sheet dl{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:calc(var(--u)*10) calc(var(--u)*14);font-size:calc(var(--u)*16)}
+.tiers{display:grid;grid-template-columns:repeat(2,auto);justify-content:start;gap:calc(var(--u)*2) calc(var(--u)*12)}
+.tiers span{white-space:nowrap}
+.sheet dd:has(.tiers){grid-column:1/-1;margin-top:calc(var(--u)*-6)}
 .sheet dt{font-weight:900;white-space:nowrap}
 .sheet dd{margin:0;color:#dfe3e5;line-height:1.5}
 .edit-lbl{display:block;margin-bottom:calc(var(--u)*8);font-size:calc(var(--u)*18);font-weight:900}
@@ -266,17 +269,17 @@ const RULE = {
   entryCap: 10,          // エントリーptの上限
   base: 100,             // 成績ptの基礎点
   paidPercent: 15,       // 入賞は上位何%か（端数は切り上げ）
-  nMinPeople: 10,        // 人数係数 ×1.0 になる人数
-  nMaxPeople: 60,        // 人数係数 ×2.0 になる人数
-  nMinCoef: 1.0, nMaxCoef: 2.0,
+  /* 規模係数: エントリー数(以上) → 係数 */
+  nTiers: [[0, 1.0], [10, 1.1], [20, 1.2], [30, 1.4], [40, 1.6], [50, 1.7], [70, 1.8], [100, 2.0]],
   rMinCoef: 0.2, rMaxCoef: 1.0
 };
 
 /* 計算（画面に依存しない） */
 const paidCount = n => Math.max(1, Math.ceil(n * RULE.paidPercent / 100));
 function nCoef(n){
-  const t = (Math.min(RULE.nMaxPeople, Math.max(RULE.nMinPeople, n)) - RULE.nMinPeople) / (RULE.nMaxPeople - RULE.nMinPeople);
-  return Math.round((RULE.nMinCoef + (RULE.nMaxCoef - RULE.nMinCoef) * t) * 100) / 100;
+  let c = RULE.nTiers[0][1];
+  for (const [min, coef] of RULE.nTiers) if (n >= min) c = coef;
+  return c;
 }
 function rCoef(rank, paid){
   if (rank > paid) return 0;
@@ -431,7 +434,11 @@ $("ruleList").innerHTML = [
   ["エントリーpt", RULE.entryPt + "pt × 回数（上限 " + RULE.entryCap + "pt）"],
   ["成績pt", RULE.base + "pt × 人数 × 順位"],
   ["インマネ", "初期値は上位" + RULE.paidPercent + "%（切り上げ）"],
-  ["人数", RULE.nMinPeople + "人以下 ×" + fmt(RULE.nMinCoef) + " 〜 " + RULE.nMaxPeople + "人以上 ×" + fmt(RULE.nMaxCoef)],
+  ["人数", '<span class="tiers">' + RULE.nTiers.map(([min, coef], i, a) => {
+    const next = a[i + 1];
+    const range = i === 0 ? "〜" + (next[0] - 1) : next ? min + "〜" + (next[0] - 1) : min + "〜";
+    return "<span>" + range + "人 ×" + fmt(coef) + "</span>";
+  }).join("") + "</span>"],
   ["順位", "入賞最下位 ×" + fmt(RULE.rMinCoef) + " 〜 優勝 ×" + fmt(RULE.rMaxCoef)],
   ["端数", "成績ptを四捨五入"]
 ].map(([a, b]) => "<dt>" + a + "</dt><dd>" + b + "</dd>").join("");
