@@ -22,7 +22,7 @@
   /* 全サイズの基準。幅390pxで1px相当になり、画面に合わせて伸縮する */
   --u:clamp(.6px,min(calc(100vw / 390),calc(100vh / 480)),1.6px);
   --bg:#14181b;
-  --line:#343b40;
+  --line:#4a5358;
   --text:#f4f5f5;
   --muted:#f0f2f3;
   --red:#d5202c;
@@ -54,31 +54,31 @@ main>section:first-child .sec-head{display:none}
 
 /* ヘッダー */
 header{flex:none;display:flex;align-items:center;justify-content:space-between;gap:calc(var(--u)*12);margin-bottom:calc(var(--u)*6)}
-h1{margin:0;font:700 calc(var(--u)*30)/1.08 var(--num);letter-spacing:.015em;
+h1{margin:0;font:500 calc(var(--u)*25)/1.08 var(--num);letter-spacing:.05em;
   background:linear-gradient(180deg,#fff 15%,#c9cdd0 55%,#8f959a 100%);
   -webkit-background-clip:text;background-clip:text;color:transparent}
 .sub{display:none;align-items:center;gap:calc(var(--u)*8);margin-top:calc(var(--u)*5);font-size:calc(var(--u)*15);font-weight:700}
 .sub::before{content:"";width:calc(var(--u)*20);height:2px;background:var(--red)}
 .help{flex:none;width:max(40px,calc(var(--u)*42));height:max(40px,calc(var(--u)*42));border-radius:50%;border:1px solid rgba(255,255,255,.34);
-  background:rgba(20,24,27,.62);color:var(--text);font:600 calc(var(--u)*24) var(--num);cursor:pointer}
+  background:rgba(20,24,27,.62);color:var(--text);font:500 calc(var(--u)*19) var(--num);cursor:pointer}
 
 /* 店舗タブ */
 .tabs{flex:none;display:flex;gap:calc(var(--u)*6);margin:0 0 calc(var(--u)*8);padding:2px;overflow-x:auto;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
-.tab{flex:none;display:flex;align-items:center;gap:calc(var(--u)*6);max-width:calc(var(--u)*190);min-height:max(44px,calc(var(--u)*44));padding:0 calc(var(--u)*15);border:1px solid #6d757a;border-radius:calc(var(--u)*10);background:rgba(0,0,0,.28);color:var(--text);font:700 calc(var(--u)*17) var(--jp);cursor:pointer;white-space:nowrap}
+.tab{flex:none;display:flex;align-items:center;gap:calc(var(--u)*6);max-width:calc(var(--u)*190);min-height:max(44px,calc(var(--u)*44));padding:0 calc(var(--u)*15);border:1px solid #6d757a;border-radius:calc(var(--u)*10);background:rgba(0,0,0,.28);color:var(--text);font:500 calc(var(--u)*14) var(--jp);cursor:pointer;white-space:nowrap}
 .tab span{overflow:hidden;text-overflow:ellipsis}
 .tab[aria-selected="true"]{background:var(--cream);border-color:var(--cream);color:var(--ink);box-shadow:inset 0 calc(var(--u)*-4) 0 var(--red)}
 .tab svg{flex:none;width:calc(var(--u)*16);height:calc(var(--u)*16);fill:none;stroke:#b5121d;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
-.tab-add{flex:none;width:max(44px,calc(var(--u)*44));min-height:max(44px,calc(var(--u)*44));border:1px dashed #8a9196;border-radius:calc(var(--u)*10);background:none;color:var(--text);font:500 calc(var(--u)*28)/1 var(--num);cursor:pointer}
+.tab-add{flex:none;width:max(44px,calc(var(--u)*44));min-height:max(44px,calc(var(--u)*44));border:1px dashed #8a9196;border-radius:calc(var(--u)*10);background:none;color:var(--text);font:400 calc(var(--u)*22)/1 var(--num);cursor:pointer}
 
 /* セクション */
 .sec-head{flex:none;min-height:max(44px,calc(var(--u)*44));display:flex;align-items:center;gap:calc(var(--u)*10)}
-.badge{flex:none;display:grid;place-items:center;width:calc(var(--u)*34);height:calc(var(--u)*34);border-radius:50%;
-  font:700 calc(var(--u)*18) var(--num);background:var(--cream);color:var(--ink);
+.badge{flex:none;display:grid;place-items:center;width:calc(var(--u)*27);height:calc(var(--u)*27);border-radius:50%;
+  font:500 calc(var(--u)*14) var(--num);background:var(--cream);color:var(--ink);
   outline:1.5px dashed rgba(255,255,255,.75);outline-offset:-5px}
 .badge.b2{background:var(--red);color:#fff}
 .badge.b1{outline-color:rgba(27,31,34,.45)}
-h2{margin:0;font-size:calc(var(--u)*22);font-weight:900;flex:1}
+h2{margin:0;font-size:calc(var(--u)*17);font-weight:700;letter-spacing:.03em;flex:1}
 
 /* 区切り */
 .sec{margin-top:calc(var(--u)*9);padding-top:calc(var(--u)*7);border-top:1px solid var(--line)}
@@ -87,15 +87,15 @@ h2{margin:0;font-size:calc(var(--u)*22);font-weight:900;flex:1}
 /* 通常は順位と合計だけ。詳細で係数と成績ptを開く */
 .rank-head,.rank{display:grid;grid-template-columns:1fr auto;column-gap:calc(var(--u)*6);align-items:center;padding:0 calc(var(--u)*12)}
 .rank-head .dt,.rank .c,.rank .p{display:none}
-.detail .rank-head,.detail .rank{grid-template-columns:calc(var(--u)*58) 1fr 1fr 1.3fr;column-gap:calc(var(--u)*12)}
+.detail .rank-head,.detail .rank{grid-template-columns:calc(var(--u)*52) .9fr .9fr 1.2fr;column-gap:calc(var(--u)*14)}
 .detail .rank-head .dt,.detail .rank .c,.detail .rank .p{display:block}
-.more{flex:none;min-height:calc(var(--u)*46);padding:0 calc(var(--u)*14);border:1px solid #6d757a;border-radius:calc(var(--u)*10);background:rgba(0,0,0,.28);color:var(--text);font:700 calc(var(--u)*16) var(--jp);cursor:pointer}
+.more{flex:none;min-height:calc(var(--u)*46);padding:0 calc(var(--u)*14);border:1px solid #6d757a;border-radius:calc(var(--u)*10);background:rgba(0,0,0,.28);color:var(--text);font:500 calc(var(--u)*13) var(--jp);cursor:pointer}
 .more::after{content:"";display:inline-block;width:calc(var(--u)*6);height:calc(var(--u)*6);margin:0 1px calc(var(--u)*3) calc(var(--u)*8);border-right:2px solid var(--coral);border-bottom:2px solid var(--coral);transform:rotate(45deg)}
 .more[aria-expanded="true"]::after{margin-bottom:-1px;transform:rotate(-135deg)}
 @keyframes flash{0%{opacity:.45}100%{opacity:1}}
 .flash{animation:flash .2s ease-out}
 @media (prefers-reduced-motion:reduce){.flash{animation:none}}
-.rank-head{flex:none;margin-top:calc(var(--u)*2);padding-bottom:calc(var(--u)*3);font-size:calc(var(--u)*14);font-weight:700;color:var(--muted)}
+.rank-head{flex:none;margin-top:calc(var(--u)*2);padding-bottom:calc(var(--u)*3);font-size:calc(var(--u)*11.5);font-weight:500;letter-spacing:.04em;color:var(--muted)}
 .rank-head span:not(:first-child),.rank span:not(:first-child){text-align:right}
 .rank{width:100%;min-height:0;border:0;border-top:1px solid var(--line);background:none;color:var(--text);text-align:left;font-family:var(--jp)}
 .rank:first-child{border-top:0}
@@ -103,45 +103,46 @@ h2{margin:0;font-size:calc(var(--u)*22);font-weight:900;flex:1}
 .rank:nth-child(5n+1):not(:first-child){border-top:2px solid #7c858a}
 /* 入賞と圏外の境目 */
 .rank.is-out,.rank.is-out:nth-child(5n+1):not(:first-child){border-top:2px solid var(--red)}
-.rank .r{font:700 calc(var(--u)*27) var(--num)}
+.rank .r{font:500 calc(var(--u)*27) var(--num)}
 .rank .r small{font-size:calc(var(--u)*16)}
-.rank .r.jp{font:900 calc(var(--u)*17) var(--jp);color:var(--muted)}
-.rank .c,.rank .p{font:500 calc(var(--u)*21) var(--num);color:#f4f5f5;font-variant-numeric:tabular-nums}
-.rank .t{font:700 calc(var(--u)*33) var(--num);color:var(--coral);font-variant-numeric:tabular-nums}
+.rank .r.jp{font:500 calc(var(--u)*17) var(--jp);color:var(--muted)}
+.rank .c,.rank .p{font:400 calc(var(--u)*21) var(--num);color:#f4f5f5;font-variant-numeric:tabular-nums}
+.rank .t{font:500 calc(var(--u)*33) var(--num);color:var(--coral);font-variant-numeric:tabular-nums}
 .rank .t small{font-size:calc(var(--u)*18);margin-left:1px}
 
 /* 順位が多いときは2列に分けて一画面に収める */
-.ranks{flex:1;min-height:0;overflow-y:auto;display:grid;grid-auto-flow:column;align-content:start;column-gap:calc(var(--u)*18);
+.ranks{flex:1;min-height:0;overflow-y:auto;display:grid;grid-auto-flow:column;align-content:start;column-gap:calc(var(--u)*24);
   grid-template-columns:repeat(var(--cols,1),minmax(0,1fr));grid-template-rows:repeat(var(--rows,1),var(--rowh,calc(var(--u)*52)))}
 .two .rank-head{display:none}
-.two .ranks{background:linear-gradient(#59626780,#59626780) center top/1px 100% no-repeat}
-.ranks .rank{height:100%;padding-inline:calc(var(--u)*8)}
+.two .ranks{background:linear-gradient(#6d757a,#6d757a) center top/1px 100% no-repeat}
+.ranks .rank{height:100%;padding-inline:calc(var(--u)*8);column-gap:calc(var(--u)*10)}
+.rank-head{padding-inline:calc(var(--u)*8)}
 .rank.col-top,.rank.col-top:nth-child(5n+1):not(:first-child){border-top:0}
-.ranks .rank .t{font-size:var(--tf);line-height:1}
-.ranks .rank .t small{font-size:.54em}
-.ranks .rank .r{font-size:calc(var(--tf) * .82);line-height:1}
+.ranks .rank .t{font-size:var(--tf);line-height:1;letter-spacing:.02em}
+.ranks .rank .t small{font-size:.5em;font-weight:400;margin-left:.15em}
+.ranks .rank .r{font-size:calc(var(--tf) * .8);line-height:1}
 .ranks .rank .r small{font-size:.6em}
-.ranks .rank .r.jp{font-size:calc(var(--tf) * .52)}
+.ranks .rank .r.jp{font-size:calc(var(--tf) * .54)}
 .ranks .rank .c,.ranks .rank .p{font-size:calc(var(--tf) * .64);line-height:1}
 
 /* 入力行 */
 .fields{display:grid;gap:calc(var(--u)*7);margin-top:0}
 .field{display:flex;align-items:center;justify-content:space-between;gap:calc(var(--u)*8)}
-.lbl{font-size:calc(var(--u)*17);font-weight:900;line-height:1.25}
+.lbl{font-size:calc(var(--u)*14);font-weight:500;line-height:1.3;letter-spacing:.02em}
 .lbl{flex:1 1 0;min-width:0}
 .lbl span{display:inline-block}
 .ctrl{flex:none}
 .lbl small{display:block;font-size:calc(var(--u)*11);font-weight:700;color:var(--muted)}
 .ctrl{display:flex;align-items:center;gap:calc(var(--u)*13)}
 .step{display:flex;align-items:center;border:1px solid #5a6267;border-radius:calc(var(--u)*10);background:rgba(0,0,0,.28)}
-.step button{width:max(44px,calc(var(--u)*46));height:max(44px,calc(var(--u)*46));border:0;background:none;color:var(--text);font:500 calc(var(--u)*28)/1 var(--num);cursor:pointer;touch-action:manipulation}
+.step button{width:max(44px,calc(var(--u)*46));height:max(44px,calc(var(--u)*46));border:0;background:none;color:var(--text);font:400 calc(var(--u)*22)/1 var(--num);cursor:pointer;touch-action:manipulation}
 .step button:disabled{color:#596066;cursor:default}
 .step input{width:calc(var(--u)*60);height:max(44px,calc(var(--u)*46));border:0;border-inline:1px solid #454c51;background:none;color:var(--text);
-  text-align:center;font:600 calc(var(--u)*29) var(--num);border-radius:0;appearance:textfield;-moz-appearance:textfield}
+  text-align:center;font:500 calc(var(--u)*23) var(--num);border-radius:0;appearance:textfield;-moz-appearance:textfield}
 .step input::-webkit-outer-spin-button,.step input::-webkit-inner-spin-button{appearance:none;margin:0}
 .coef-box{flex:none;text-align:right;width:calc(var(--u)*76)}
-.coef-box small{display:block;font-size:calc(var(--u)*12.5);font-weight:700;color:var(--muted);white-space:nowrap;margin-bottom:1px}
-.coef{min-width:calc(var(--u)*56);line-height:1.05;text-align:right;font:700 calc(var(--u)*29) var(--num);color:var(--coral);white-space:nowrap}
+.coef-box small{display:block;font-size:calc(var(--u)*10.5);font-weight:500;letter-spacing:.03em;color:var(--muted);white-space:nowrap;margin-bottom:1px}
+.coef{min-width:calc(var(--u)*56);line-height:1.05;text-align:right;font:500 calc(var(--u)*22) var(--num);color:var(--coral);white-space:nowrap}
 .coef.out{font:900 calc(var(--u)*15) var(--jp);color:var(--muted)}
 
 /* 数字は白 */
@@ -153,21 +154,59 @@ h2{margin:0;font-size:calc(var(--u)*22);font-weight:900;flex:1}
 dialog{width:min(calc(100vw - calc(var(--u)*32)),calc(var(--u)*440));padding:0;border:1px solid #4a5257;border-radius:calc(var(--u)*16);background:#1d2226;color:var(--text)}
 dialog::backdrop{background:rgba(0,0,0,.66)}
 .sheet{color:#fff;padding:calc(var(--u)*20)}
-.sheet h3{margin:0 0 calc(var(--u)*14);font-size:calc(var(--u)*21);font-weight:900}
-.sheet dl{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:calc(var(--u)*10) calc(var(--u)*14);font-size:calc(var(--u)*16)}
+.sheet h3{margin:0 0 calc(var(--u)*14);font-size:calc(var(--u)*17);font-weight:700}
+.sheet dl{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:calc(var(--u)*10) calc(var(--u)*14);font-size:calc(var(--u)*13.5)}
 .tiers{display:grid;grid-template-columns:repeat(2,auto);justify-content:start;gap:calc(var(--u)*2) calc(var(--u)*12)}
 .tiers span{white-space:nowrap}
 .sheet dd:has(.tiers){grid-column:1/-1;margin-top:calc(var(--u)*-6)}
-.sheet dt{font-weight:900;white-space:nowrap}
+.sheet dt{font-weight:700;white-space:nowrap}
 .sheet dd{margin:0;color:#fff;line-height:1.5}
-.edit-lbl{display:block;margin-bottom:calc(var(--u)*8);font-size:calc(var(--u)*18);font-weight:900}
+.edit-lbl{display:block;margin-bottom:calc(var(--u)*8);font-size:calc(var(--u)*15);font-weight:700}
 .edit-input{display:block;width:100%;height:calc(var(--u)*52);padding:0 calc(var(--u)*12);border:1px solid #6d757a;border-radius:calc(var(--u)*10);background:rgba(0,0,0,.28);color:var(--text);font:700 max(16px,calc(var(--u)*18)) var(--jp)}
 .edit-actions{display:flex;gap:calc(var(--u)*14);margin-top:calc(var(--u)*16)}
 .edit-actions .close{flex:1;margin-top:0}
-.del{flex:none;min-width:calc(var(--u)*88);height:calc(var(--u)*52);padding:0 calc(var(--u)*12);border:1px solid #6d757a;border-radius:calc(var(--u)*10);background:none;color:var(--text);font:700 calc(var(--u)*16) var(--jp);cursor:pointer}
+.del{flex:none;min-width:calc(var(--u)*88);height:calc(var(--u)*52);padding:0 calc(var(--u)*12);border:1px solid #6d757a;border-radius:calc(var(--u)*10);background:none;color:var(--text);font:500 calc(var(--u)*14) var(--jp);cursor:pointer}
 .del[data-armed="1"]{flex:1;border-color:var(--coral);color:#fff}
 .del[hidden]{display:none}
-.close{display:block;width:100%;height:calc(var(--u)*52);margin-top:calc(var(--u)*18);border:0;border-radius:calc(var(--u)*10);background:var(--red);color:#fff;font:900 calc(var(--u)*17) var(--jp);cursor:pointer}
+.close{display:block;width:100%;height:calc(var(--u)*52);margin-top:calc(var(--u)*18);border:0;border-radius:calc(var(--u)*10);background:var(--red);color:#fff;font:700 calc(var(--u)*15) var(--jp);cursor:pointer}
+
+/* リキッドグラス: 背景の赤が透ける半透明パネル */
+:root{
+  --glass:linear-gradient(145deg,rgba(255,255,255,.12),rgba(255,255,255,.04));
+  --glass-on:linear-gradient(145deg,rgba(255,255,255,.34),rgba(255,255,255,.14));
+  --glass-line:rgba(255,255,255,.24);
+  --glass-blur:blur(22px) saturate(170%);
+  --glass-shadow:inset 0 1px 0 rgba(255,255,255,.34),inset 0 -1px 0 rgba(255,255,255,.06),0 calc(var(--u)*8) calc(var(--u)*24) rgba(0,0,0,.34);
+  --line:rgba(255,255,255,.15);
+}
+.bg{background:
+  radial-gradient(70% 42% at 96% 4%,rgba(200,26,38,.62),transparent 72%),
+  radial-gradient(62% 36% at 2% 62%,rgba(150,20,32,.36),transparent 74%),
+  radial-gradient(60% 34% at 90% 100%,rgba(120,16,28,.36),transparent 76%),
+  var(--bg)}
+.help,.tab,.tab-add,.step,.more,.rank-card{
+  background:var(--glass);border:1px solid var(--glass-line);
+  -webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
+  box-shadow:var(--glass-shadow)}
+.tab,.tab-add,.more{border-radius:calc(var(--u)*999);border-style:solid}
+.step{border-radius:calc(var(--u)*999);overflow:hidden}
+.step input{border-inline:1px solid rgba(255,255,255,.14)}
+.tab[aria-selected="true"]{background:var(--glass-on);border-color:rgba(255,255,255,.5);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 calc(var(--u)*6) calc(var(--u)*18) rgba(0,0,0,.32)}
+.tab svg{stroke:#fff}
+.rank-card{background:linear-gradient(145deg,rgba(255,255,255,.08),rgba(255,255,255,.02)),rgba(10,12,14,.62);margin-top:calc(var(--u)*6);flex:1;min-height:0;display:flex;flex-direction:column;border-radius:calc(var(--u)*20);padding:calc(var(--u)*6) calc(var(--u)*6) calc(var(--u)*4)}
+.badge,.badge.b2{background:var(--glass-on);color:#fff;border:1px solid rgba(255,255,255,.4);outline:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.45)}
+.badge.b2{background:linear-gradient(145deg,rgba(240,50,62,.95),rgba(170,18,30,.8))}
+.coef-box small,.lbl{text-shadow:0 1px 3px rgba(0,0,0,.45)}
+.sec{border-top:0}
+.rank:nth-child(5n+1):not(:first-child){border-top:1px solid rgba(255,255,255,.3)}
+.rank.is-out,.rank.is-out:nth-child(5n+1):not(:first-child){border-top:1.5px solid rgba(255,90,100,.85)}
+.rank.col-top,.rank.col-top:nth-child(5n+1):not(:first-child){border-top:0}
+.two .ranks{background:linear-gradient(rgba(255,255,255,.2),rgba(255,255,255,.2)) center top/1px 100% no-repeat}
+dialog{background:linear-gradient(145deg,rgba(62,66,72,.72),rgba(24,27,30,.78));border-color:rgba(255,255,255,.28);
+  -webkit-backdrop-filter:blur(30px) saturate(170%);backdrop-filter:blur(30px) saturate(170%);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 20px 60px rgba(0,0,0,.5);border-radius:calc(var(--u)*24)}
+dialog::backdrop{background:rgba(0,0,0,.42)}
+.edit-input,.del{background:var(--glass);border-color:var(--glass-line);border-radius:calc(var(--u)*14)}
+.close{border-radius:calc(var(--u)*14);background:linear-gradient(145deg,rgba(236,44,56,.95),rgba(170,18,30,.9));box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
 
 /* 低い画面・狭い画面 */
 @media (max-height:740px){
@@ -261,8 +300,10 @@ dialog::backdrop{background:rgba(0,0,0,.66)}
         <h2 id="h-result">順位別ポイント</h2>
         <button class="more" id="moreBtn" type="button" aria-expanded="false" aria-controls="ranks">詳細</button>
       </div>
+      <div class="rank-card">
       <div class="rank-head" id="rankHead" aria-hidden="true"><span>順位</span><span class="dt">順位係数</span><span class="dt">成績pt</span><span>合計</span></div>
       <div class="ranks" id="ranks" role="table" aria-label="順位別ポイント"></div>
+      </div>
     </section>
   </main>
 </div>
@@ -395,7 +436,7 @@ function fitRanks(){
   const box = $("ranks"), sec = box.closest("section");
   const items = [...box.children];
   const unit = $("moreBtn").offsetHeight / 44 || 1;
-  const minH = Math.max(30, 32 * unit), maxH = 56 * unit;
+  const minH = Math.max(30, 32 * unit), maxH = 50 * unit;
   const detail = sec.classList.contains("detail");
   sec.classList.remove("two");
   let H = box.clientHeight;
@@ -407,7 +448,7 @@ function fitRanks(){
   box.style.setProperty("--rows", rows);
   const apply = () => {
     box.style.setProperty("--rowh", rowH + "px");
-    box.style.setProperty("--tf", Math.min(33 * unit, rowH * 0.76) + "px");
+    box.style.setProperty("--tf", Math.min(25 * unit, rowH * 0.74) + "px");
   };
   apply();
   for (let i = 0; i < 6 && rowH > floor && box.scrollHeight > box.clientHeight; i++) { rowH--; apply(); }
