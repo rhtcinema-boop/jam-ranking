@@ -82,7 +82,7 @@ h2{margin:0;font-size:calc(var(--u)*22);font-weight:900;flex:1}
 /* 通常は順位と合計だけ。詳細で係数と成績ptを開く */
 .rank-head,.rank{display:grid;grid-template-columns:1fr auto;column-gap:calc(var(--u)*6);align-items:center;padding:0 calc(var(--u)*12)}
 .rank-head .dt,.rank .c,.rank .p{display:none}
-.detail .rank-head,.detail .rank{grid-template-columns:calc(var(--u)*62) 1fr 1fr 1.3fr}
+.detail .rank-head,.detail .rank{grid-template-columns:calc(var(--u)*58) 1fr 1fr 1.3fr;column-gap:calc(var(--u)*12)}
 .detail .rank-head .dt,.detail .rank .c,.detail .rank .p{display:block}
 .more{flex:none;min-height:calc(var(--u)*46);padding:0 calc(var(--u)*14);border:1px solid #6d757a;border-radius:calc(var(--u)*10);background:rgba(0,0,0,.28);color:var(--text);font:700 calc(var(--u)*16) var(--jp);cursor:pointer}
 .more::after{content:"";display:inline-block;width:calc(var(--u)*6);height:calc(var(--u)*6);margin:0 1px calc(var(--u)*3) calc(var(--u)*8);border-right:2px solid var(--coral);border-bottom:2px solid var(--coral);transform:rotate(45deg)}
@@ -115,9 +115,9 @@ h2{margin:0;font-size:calc(var(--u)*22);font-weight:900;flex:1}
 .lbl small{display:block;font-size:calc(var(--u)*11);font-weight:700;color:var(--muted)}
 .ctrl{display:flex;align-items:center;gap:calc(var(--u)*13)}
 .step{display:flex;align-items:center;border:1px solid #5a6267;border-radius:calc(var(--u)*10);background:rgba(0,0,0,.28)}
-.step button{width:calc(var(--u)*46);height:calc(var(--u)*50);border:0;background:none;color:var(--text);font:500 calc(var(--u)*28)/1 var(--num);cursor:pointer;touch-action:manipulation}
+.step button{width:max(44px,calc(var(--u)*46));height:max(44px,calc(var(--u)*50));border:0;background:none;color:var(--text);font:500 calc(var(--u)*28)/1 var(--num);cursor:pointer;touch-action:manipulation}
 .step button:disabled{color:#596066;cursor:default}
-.step input{width:calc(var(--u)*60);height:calc(var(--u)*50);border:0;border-inline:1px solid #454c51;background:none;color:var(--text);
+.step input{width:calc(var(--u)*60);height:max(44px,calc(var(--u)*50));border:0;border-inline:1px solid #454c51;background:none;color:var(--text);
   text-align:center;font:600 calc(var(--u)*29) var(--num);border-radius:0;appearance:textfield;-moz-appearance:textfield}
 .step input::-webkit-outer-spin-button,.step input::-webkit-inner-spin-button{appearance:none;margin:0}
 .coef-box{flex:none;text-align:right;width:calc(var(--u)*76)}
@@ -125,9 +125,8 @@ h2{margin:0;font-size:calc(var(--u)*22);font-weight:900;flex:1}
 .coef{min-width:calc(var(--u)*56);line-height:1.05;text-align:right;font:700 calc(var(--u)*29) var(--num);color:var(--coral);white-space:nowrap}
 .coef.out{font:900 calc(var(--u)*15) var(--jp);color:var(--muted)}
 
-/* 赤い数字は白フチで読みやすく */
-.coef,.rank .t{color:#e0101c;-webkit-text-stroke:calc(var(--u)*3.2) #fff;paint-order:stroke fill;letter-spacing:.035em}
-.rank .t small{-webkit-text-stroke-width:calc(var(--u)*2.6)}
+/* 数字は白 */
+.coef,.rank .t{color:#fff}
 
 :focus-visible{outline:2px solid #fff;outline-offset:2px}
 
@@ -147,7 +146,7 @@ dialog::backdrop{background:rgba(0,0,0,.66)}
 .edit-actions{display:flex;gap:calc(var(--u)*14);margin-top:calc(var(--u)*16)}
 .edit-actions .close{flex:1;margin-top:0}
 .del{flex:none;min-width:calc(var(--u)*88);height:calc(var(--u)*52);padding:0 calc(var(--u)*12);border:1px solid #6d757a;border-radius:calc(var(--u)*10);background:none;color:var(--text);font:700 calc(var(--u)*16) var(--jp);cursor:pointer}
-.del[data-armed="1"]{flex:1;border-color:var(--coral);color:var(--coral)}
+.del[data-armed="1"]{flex:1;border-color:var(--coral);color:#fff}
 .del[hidden]{display:none}
 .close{display:block;width:100%;height:calc(var(--u)*52);margin-top:calc(var(--u)*18);border:0;border-radius:calc(var(--u)*10);background:var(--red);color:#fff;font:900 calc(var(--u)*17) var(--jp);cursor:pointer}
 
@@ -158,6 +157,11 @@ dialog::backdrop{background:rgba(0,0,0,.66)}
   .sec{margin-top:calc(var(--u)*10);padding-top:calc(var(--u)*10)}
 }
 
+/* 幅が狭いときは入力欄を詰めて−＋の押しやすさを保つ */
+@media (max-width:360px){
+  .step input{width:calc(var(--u)*46)}
+  .ctrl{gap:calc(var(--u)*9)}
+}
 /* 横に余裕があれば入力と順位表を左右に並べる */
 @media (min-width:700px),(min-width:560px) and (orientation:landscape){
   :root{--u:clamp(.72px,calc(100vw / 780),1.5px)}
@@ -433,7 +437,7 @@ bindNumber($("cInput"), setCount, () => S.count);
 $("ruleList").innerHTML = [
   ["エントリーpt", RULE.entryPt + "pt × 回数（上限 " + RULE.entryCap + "pt）"],
   ["成績pt", RULE.base + "pt × 人数 × 順位"],
-  ["インマネ", "初期値は上位" + RULE.paidPercent + "%（切り上げ）"],
+  ["インマネ", "入賞する人数（初期値は上位" + RULE.paidPercent + "%・切り上げ）"],
   ["人数", '<span class="tiers">' + RULE.nTiers.map(([min, coef], i, a) => {
     const next = a[i + 1];
     const range = i === 0 ? "〜" + (next[0] - 1) : next ? min + "〜" + (next[0] - 1) : min + "〜";
