@@ -231,6 +231,33 @@ dialog::backdrop{background:rgba(0,0,0,.42)}
   .fields{margin-top:calc(var(--u)*7)}
   main>.sec{margin-top:0;padding-top:0;border-top:0}
 }
+
+/* 比較タブ（入力なし・一覧のみ） */
+#compare{flex:1;min-height:0;display:flex;flex-direction:column}
+#compare[hidden],main[hidden]{display:none}
+#compare .sec-head h2{flex:1}
+.cmp-note{font-size:calc(var(--u)*11.5);color:var(--muted)}
+.cmp-card{flex:0 1 auto;min-height:0;overflow:auto;padding:0}
+.cmp{border-collapse:separate;border-spacing:0;white-space:nowrap;font-variant-numeric:tabular-nums;min-width:100%}
+.cmp th,.cmp td{padding:calc(var(--u)*11) calc(var(--u)*9);text-align:right;border-bottom:1px solid var(--line);font:400 calc(var(--u)*16) var(--num);color:var(--text)}
+.cmp thead th{position:sticky;top:0;z-index:1;background:rgba(16,18,21,.94);font:500 calc(var(--u)*11.5) var(--jp);color:var(--muted);letter-spacing:.03em;padding-block:calc(var(--u)*9)}
+.cmp th[scope=row]{position:sticky;left:0;z-index:1;background:rgba(16,18,21,.94);text-align:left;font:500 calc(var(--u)*14) var(--jp);max-width:calc(var(--u)*104);overflow:hidden;text-overflow:ellipsis}
+.cmp thead th:first-child{left:0;z-index:2;text-align:left}
+.cmp td.in{color:#c9cdd0;font-size:calc(var(--u)*15);padding-inline:calc(var(--u)*6)}
+.cmp td.in small{font:400 calc(var(--u)*10) var(--jp);color:var(--muted);margin-left:calc(var(--u)*3)}
+.cmp thead th.ih{padding-inline:calc(var(--u)*6)}
+.cmp .r1{border-left:1px solid rgba(255,255,255,.3)}
+.cmp td.rk{font-weight:500;font-size:calc(var(--u)*17)}
+.cmp td.best{background:linear-gradient(var(--coral),var(--coral)) right calc(var(--u)*9) bottom calc(var(--u)*5)/calc(100% - var(--u)*18) calc(var(--u)*3) no-repeat}
+.cmp-wrap{position:relative;flex:0 1 auto;min-height:0;display:flex;flex-direction:column}
+.cmp-wrap .cmp-card{flex:1}
+.cmp-wrap::after{content:"›";position:absolute;right:1px;top:calc(var(--u)*6);bottom:calc(var(--u)*4);width:calc(var(--u)*34);display:flex;align-items:center;justify-content:flex-end;padding-right:calc(var(--u)*6);box-sizing:border-box;border-radius:0 calc(var(--u)*20) calc(var(--u)*20) 0;background:linear-gradient(90deg,rgba(14,16,19,0),rgba(14,16,19,.92));color:#fff;font:400 calc(var(--u)*26)/1 var(--num);pointer-events:none;opacity:0;transition:opacity .2s}
+.cmp-wrap.more-r::after{opacity:1}
+.cmp td.na{color:var(--muted);font-weight:400}
+.cmp tbody tr{cursor:pointer}
+.cmp tbody tr:active>*{background-color:rgba(255,255,255,.1)}
+.cmp tbody tr:last-child>*{border-bottom:0}
+.tab.cmp-tab svg{stroke:currentColor}
 </style>
 </head>
 <body>
@@ -308,6 +335,14 @@ dialog::backdrop{background:rgba(0,0,0,.42)}
       </div>
     </section>
   </main>
+
+  <section id="compare" hidden aria-labelledby="h-cmp">
+    <div class="sec-head">
+      <h2 id="h-cmp">店舗比較</h2>
+      <span class="cmp-note">行タップで店舗へ・下線は最高pt</span>
+    </div>
+    <div class="cmp-wrap" id="cmpWrap"><div class="rank-card cmp-card" id="cmpScroll"><table class="cmp" id="cmpTable"></table></div></div>
+  </section>
 </div>
 
 <dialog id="tabEdit" aria-labelledby="tabEditTitle">
@@ -374,11 +409,11 @@ try {
   const valid = t => t && typeof t.name === "string" && t.n >= 2 && t.n <= 999 && t.paid >= 1 && t.paid <= t.n && t.count >= 1 && t.count <= 99;
   if (d && Array.isArray(d.tabs) && d.tabs.length && d.tabs.every(valid)) {
     tabs = d.tabs;
-    active = Math.min(Math.max(0, d.active | 0), tabs.length - 1);
+    active = Math.min(Math.max(-1, d.active | 0), tabs.length - 1);
   }
 } catch (e) {}
 function save(){ try { localStorage.setItem(KEY, JSON.stringify({ tabs, active })); } catch (e) {} }
-let S = tabs[active];
+let S = tabs[Math.max(0, active)];
 const $ = id => document.getElementById(id);
 
 let lastTotals = null, lastEntry = null;
@@ -388,10 +423,18 @@ function row(label, isJp, coef, pt, total, flash){
     + '<span class="t' + (flash ? " flash" : "") + '" role="cell">' + total + '<small>pt</small></span></div>';
 }
 
+const GRID = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 10h18M9 4v16"/></svg>';
 const PEN = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1-5L16 4l4 4L9 19z"/></svg>';
 function renderTabs(){
   const box = $("tabs"), keep = box.scrollLeft;
   box.textContent = "";
+  const cb = document.createElement("button");
+  cb.className = "tab cmp-tab"; cb.type = "button";
+  cb.setAttribute("role", "tab");
+  cb.setAttribute("aria-selected", String(active < 0));
+  cb.innerHTML = GRID + "<span>比較</span>";
+  cb.addEventListener("click", () => { if (active >= 0) selectTab(-1); });
+  box.append(cb);
   tabs.forEach((t, i) => {
     const b = document.createElement("button");
     const on = i === active;
@@ -412,11 +455,11 @@ function renderTabs(){
   add.addEventListener("click", () => newTab());
   box.append(add);
   box.scrollLeft = keep;
-  const cur = box.children[active];
+  const cur = box.children[active + 1];
   if (cur.offsetLeft < box.scrollLeft) box.scrollLeft = cur.offsetLeft;
   else if (cur.offsetLeft + cur.offsetWidth > box.scrollLeft + box.clientWidth) box.scrollLeft = cur.offsetLeft + cur.offsetWidth - box.clientWidth;
 }
-function selectTab(i){ active = i; S = tabs[i]; lastTotals = null; lastEntry = null; render(); }
+function selectTab(i){ active = i; S = tabs[Math.max(0, i)]; lastTotals = null; lastEntry = null; render(); }
 function newTab(name){
   tabs.push({ name: name || "店舗" + (tabs.length + 1), n: 30, paid: paidCount(30), count: 1 });
   selectTab(tabs.length - 1);
@@ -438,6 +481,7 @@ function openEdit(){
 
 /* 順位表を残りの高さに合わせる */
 function fitRanks(){
+  if (active < 0) return;
   const box = $("ranks"), sec = box.closest("section");
   const items = [...box.children];
   const unit = $("moreBtn").offsetHeight / 44 || 1;
@@ -460,8 +504,41 @@ function fitRanks(){
   items.forEach((el, i) => el.classList.toggle("col-top", cols === 2 && i === rows));
 }
 
+function renderCompare(){
+  const maxPaid = Math.max(...tabs.map(t => t.paid));
+  let h = '<thead><tr><th scope="col">店舗</th><th scope="col" class="ih">参加</th><th scope="col" class="ih">インマネ</th><th scope="col" class="ih">エントリー</th>';
+  for (let k = 1; k <= maxPaid; k++) h += '<th scope="col"' + (k === 1 ? ' class="r1"' : '') + '>' + k + '位</th>';
+  h += '<th scope="col">圏外</th></tr></thead><tbody>';
+  const best = [];
+  for (let k = 1; k <= maxPaid + 1; k++) {
+    const v = tabs.map(t => k <= maxPaid ? (k <= t.paid ? calc(t.count, t.n, k, t.paid).total : -1) : calc(t.count, t.n, t.paid + 1, t.paid).total);
+    const m = Math.max(...v);
+    best.push(tabs.length > 1 && v.filter(x => x === m).length < tabs.length ? m : null);
+  }
+  tabs.forEach((t, i) => {
+    h += '<tr data-i="' + i + '"><th scope="row"></th><td class="in">' + t.n + '<small>人</small></td><td class="in">' + t.paid + '<small>人</small></td><td class="in">' + t.count + '<small>回</small></td>';
+    for (let k = 1; k <= maxPaid; k++) {
+      const c = k === 1 ? " r1" : "";
+      if (k > t.paid) { h += '<td class="rk na' + c + '">−</td>'; continue; }
+      const v = calc(t.count, t.n, k, t.paid).total;
+      h += '<td class="rk' + c + (v === best[k - 1] ? " best" : "") + '">' + pt(v) + '</td>';
+    }
+    const o = calc(t.count, t.n, t.paid + 1, t.paid).total;
+    h += '<td class="rk' + (o === best[maxPaid] ? " best" : "") + '">' + pt(o) + '</td></tr>';
+  });
+  const tb = $("cmpTable");
+  tb.innerHTML = h + "</tbody>";
+  tb.querySelectorAll("tbody th").forEach((th, i) => th.textContent = tabs[i].name);
+  cmpEdge();
+}
+function cmpEdge(){ const b = $("cmpScroll"); $("cmpWrap").classList.toggle("more-r", b.scrollLeft + b.clientWidth < b.scrollWidth - 2); }
+
 function render(){
   renderTabs();
+  const cmp = active < 0;
+  document.querySelector("main").hidden = cmp;
+  $("compare").hidden = !cmp;
+  if (cmp) { renderCompare(); save(); return; }
   const rows = [], totals = [];
   const changed = (i, v) => lastTotals !== null && lastTotals[i] !== v;
   for (let k = 1; k <= S.paid; k++){
@@ -551,6 +628,9 @@ $("moreBtn").addEventListener("click", () => {
   $("moreBtn").closest("section").classList.toggle("detail", open);
   fitRanks();
 });
+$("cmpScroll").addEventListener("scroll", cmpEdge, { passive: true });
+addEventListener("resize", () => { if (active < 0) cmpEdge(); });
+$("cmpTable").addEventListener("click", e => { const tr = e.target.closest("tbody tr"); if (tr) selectTab(+tr.dataset.i); });
 $("helpBtn").addEventListener("click", () => $("help").showModal());
 $("helpClose").addEventListener("click", () => $("help").close());
 $("help").addEventListener("click", e => { if (e.target === $("help")) $("help").close(); });
