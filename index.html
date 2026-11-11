@@ -141,6 +141,10 @@ h2{margin:0;font-size:calc(var(--u)*17);font-weight:700;letter-spacing:.03em;fle
 .step button:disabled{color:#596066;cursor:default}
 .step input{width:calc(var(--u)*60);height:max(44px,calc(var(--u)*46));border:0;border-inline:1px solid #454c51;background:none;color:var(--text);
   text-align:center;font:500 calc(var(--u)*23) var(--num);border-radius:0;appearance:textfield;-moz-appearance:textfield}
+.step.fixed{width:calc(var(--u)*152);min-width:calc(2*max(44px,calc(var(--u)*46)) + var(--u)*60);height:max(44px,calc(var(--u)*46));justify-content:center;gap:calc(var(--u)*4);background:rgba(0,0,0,.18)!important;box-shadow:none!important;border-style:dashed!important;border-color:rgba(255,255,255,.45)!important}
+.coef.sm{font-size:calc(var(--u)*17);white-space:nowrap}
+.step.fixed output{font:500 calc(var(--u)*23) var(--num);color:var(--text)}
+.step.fixed small{font-size:calc(var(--u)*12);color:var(--muted)}
 .step input::-webkit-outer-spin-button,.step input::-webkit-inner-spin-button{appearance:none;margin:0}
 .coef-box{flex:none;text-align:right;width:calc(var(--u)*76)}
 .coef-box small{display:block;font-size:calc(var(--u)*10.5);font-weight:500;letter-spacing:.03em;color:var(--muted);white-space:nowrap;margin-bottom:1px}
@@ -299,14 +303,10 @@ dialog::backdrop{background:rgba(0,0,0,.42)}
         </div>
       </div>
       <div class="field">
-        <label class="lbl" for="iInput"><span>インマネ</span><span>人数</span></label>
+        <span class="lbl" id="iLbl"><span>pt対象</span><span>人数</span></span>
         <div class="ctrl">
-          <div class="step">
-            <button type="button" id="iDown" aria-label="インマネ人数を減らす">−</button>
-            <input id="iInput" type="number" inputmode="numeric" min="1" max="999" value="5">
-            <button type="button" id="iUp" aria-label="インマネ人数を増やす">+</button>
-          </div>
-          <div class="coef-box"><small>入賞率</small><div class="coef" id="iRate" aria-live="polite">17%</div></div>
+          <div class="step fixed" aria-labelledby="iLbl"><output id="iOut" aria-live="polite">5</output><small>人</small></div>
+          <div class="coef-box"><small>自動・切り上げ</small><div class="coef sm" id="iRate">上位15%</div></div>
         </div>
       </div>
       <div class="field">
@@ -406,9 +406,10 @@ let tabs = [{ name: "店舗1", n: 30, paid: 5, count: 3 }];
 let active = 0;
 try {
   const d = JSON.parse(localStorage.getItem(KEY));
-  const valid = t => t && typeof t.name === "string" && t.n >= 2 && t.n <= 999 && t.paid >= 1 && t.paid <= t.n && t.count >= 1 && t.count <= 99;
+  const valid = t => t && typeof t.name === "string" && t.n >= 2 && t.n <= 999 && t.count >= 1 && t.count <= 99;
   if (d && Array.isArray(d.tabs) && d.tabs.length && d.tabs.every(valid)) {
     tabs = d.tabs;
+    tabs.forEach(t => t.paid = paidCount(t.n));
     active = Math.min(Math.max(-1, d.active | 0), tabs.length - 1);
   }
 } catch (e) {}
@@ -506,7 +507,7 @@ function fitRanks(){
 
 function renderCompare(){
   const maxPaid = Math.max(...tabs.map(t => t.paid));
-  let h = '<thead><tr><th scope="col">店舗</th><th scope="col" class="ih">参加</th><th scope="col" class="ih">インマネ</th><th scope="col" class="ih">エントリー</th>';
+  let h = '<thead><tr><th scope="col">店舗</th><th scope="col" class="ih">参加</th><th scope="col" class="ih">pt対象</th><th scope="col" class="ih">エントリー</th>';
   for (let k = 1; k <= maxPaid; k++) h += '<th scope="col"' + (k === 1 ? ' class="r1"' : '') + '>' + k + '位</th>';
   h += '<th scope="col">圏外</th></tr></thead><tbody>';
   const best = [];
@@ -558,25 +559,20 @@ function render(){
 
   $("entryPt").textContent = e.entry + "pt";
   if (document.activeElement !== $("nInput")) $("nInput").value = S.n;
-  if (document.activeElement !== $("iInput")) $("iInput").value = S.paid;
+  $("iOut").textContent = S.paid;
   if (document.activeElement !== $("cInput")) $("cInput").value = S.count;
   $("nCoef").textContent = "×" + fmt(e.a);
-  $("iRate").textContent = Math.round(S.paid / S.n * 100) + "%";
   $("nDown").disabled = S.n <= 2;
   $("nUp").disabled = S.n >= 999;
-  $("iDown").disabled = S.paid <= 1;
-  $("iUp").disabled = S.paid >= S.n;
   $("cDown").disabled = S.count <= 1;
   $("cUp").disabled = S.count >= 99;
-  $("iInput").max = S.n;
   fitRanks();
   save();
 }
 
 /* 操作 */
-/* 参加人数を変えるとインマネ人数は上位15%に戻る。その後で手直しできる */
+/* pt対象は参加人数の上位15%（切り上げ）で固定。それ以下はエントリーptのみ */
 function setN(v){ S.n = Math.min(999, Math.max(2, v)); S.paid = paidCount(S.n); render(); }
-function setPaid(v){ S.paid = Math.min(S.n, Math.max(1, v)); render(); }
 function setCount(v){ S.count = Math.min(99, Math.max(1, v)); render(); }
 
 function hold(btn, fn){
@@ -588,8 +584,6 @@ function hold(btn, fn){
 }
 hold($("nDown"), () => setN(S.n - 1));
 hold($("nUp"), () => setN(S.n + 1));
-hold($("iDown"), () => setPaid(S.paid - 1));
-hold($("iUp"), () => setPaid(S.paid + 1));
 hold($("cDown"), () => setCount(S.count - 1));
 hold($("cUp"), () => setCount(S.count + 1));
 
@@ -599,13 +593,12 @@ function bindNumber(input, apply, current){
   input.addEventListener("blur", () => { input.value = current(); render(); });
 }
 bindNumber($("nInput"), setN, () => S.n);
-bindNumber($("iInput"), setPaid, () => S.paid);
 bindNumber($("cInput"), setCount, () => S.count);
 
 $("ruleList").innerHTML = [
   ["エントリーpt", RULE.entryPt + "pt × 回数（上限 " + RULE.entryCap + "pt）"],
   ["成績pt", RULE.base + "pt × 人数 × 順位"],
-  ["インマネ", "入賞する人数（初期値は上位" + RULE.paidPercent + "%・切り上げ）"],
+  ["pt対象", "参加人数の上位" + RULE.paidPercent + "%（切り上げ・最低1名）。それ以下はエントリーptのみ"],
   ["人数", '<span class="tiers">' + RULE.nTiers.map(([min, coef], i, a) => {
     const next = a[i + 1];
     const range = i === 0 ? "〜" + (next[0] - 1) : next ? min + "〜" + (next[0] - 1) : min + "〜";
@@ -637,7 +630,7 @@ $("help").addEventListener("click", e => { if (e.target === $("help")) $("help")
 
 if (window.ResizeObserver) new ResizeObserver(() => fitRanks()).observe(document.querySelector("main"));
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitRanks);
-window.__jam = { calc, get S(){ return S; }, get tabs(){ return tabs; }, setN, setPaid, setCount, render, newTab, selectTab, renameTab, openEdit };
+window.__jam = { calc, get S(){ return S; }, get tabs(){ return tabs; }, setN, setCount, render, newTab, selectTab, renameTab, openEdit };
 render();
 
 if ("serviceWorker" in navigator && location.protocol === "https:") {
